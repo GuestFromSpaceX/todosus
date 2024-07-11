@@ -30,19 +30,25 @@ request.onsuccess = function () {
     const mainSearch = document.getElementById('mainSearch');
     
     displayTasks(db, 'existance', 1);
+    displayArchiveTasks(db);
 
-    mainSearch.addEventListener('input', function () {
+    mainSearch?.addEventListener('input', function () {
         if (mainSearch.value != '') {
             displayTasks(db, 'innerText', mainSearch.value);
-        } else {;
+        } else {
             displayTasks(db, 'existance', 1);
         }
     });
 
     transaction.oncomplete = function () {
-        document.getElementById('add').addEventListener('click', function () {
+        document.getElementById('add')?.addEventListener('click', function () {
             addTask(db);
         });
+
+        document.querySelector('.main__delete')?.addEventListener('click', function() {
+            deleteAllTasks(db);
+            console.log(1)
+        })
     };
 };
 
@@ -51,9 +57,7 @@ function displayTasks(db, index, get) {
     const transaction = db.transaction("tasks", "readonly");
     const store = transaction.objectStore("tasks");
     const existanceIndex = store.index(index);
-    const queryAll = existanceIndex.getAll();
-
-    console.log('db', store)
+    const queryAll = existanceIndex.getAll(1);
     
     queryAll.onsuccess = function () {
         let tasks = null;
@@ -64,13 +68,34 @@ function displayTasks(db, index, get) {
             tasks = queryAll.result;
         }
         const mainBlock = document.getElementById('block');
-        mainBlock.innerHTML = '';
+        if (mainBlock) {
+            mainBlock.innerHTML = '';
+        }
         tasks.forEach(task => {
             DOMElement(db, task, mainBlock);
         });
 
     }
 
+}
+
+function displayArchiveTasks(db) {
+    const transaction = db.transaction("tasks", "readonly");
+    const store = transaction.objectStore("tasks");
+    const existanceIndex = store.index('existance');
+    const queryAll = existanceIndex.getAll(0);
+
+    queryAll.onsuccess = function () {
+        let tasks = queryAll.result;
+        const mainBlock = document.querySelector('.main__arcive');
+        if (mainBlock) {
+            mainBlock.innerHTML = '';
+        }
+        tasks.forEach(task => {
+            ArchiveDOMElement(db, task, mainBlock);
+        });
+
+    }
 }
 
 function DOMElement(db, task, mainBlock) {
@@ -124,7 +149,7 @@ function DOMElement(db, task, mainBlock) {
 
     taskDiv.appendChild(archiveButtonHidden);
 
-    mainBlock.appendChild(taskDiv);
+    mainBlock?.appendChild(taskDiv);
     
     inputCheckbox.addEventListener('click', function () {
         checkTask(db, task, inputText);
@@ -134,20 +159,87 @@ function DOMElement(db, task, mainBlock) {
         updateText(db, task, inputText);
     })
 
-    archiveButton.addEventListener('click', function() {
-        archiveTask(db, task);
-    })
+    Array.from([archiveButton, archiveButtonHidden]).forEach((item) => {
+        item.addEventListener('click', function() {
+            archiveTask(db, task);
+        });
+    });
+    
+}
 
-    archiveButtonHidden.addEventListener('click', function() {
-        archiveTask(db, task);
-    })
+function ArchiveDOMElement(db, task, mainBlock) {
+    const taskDiv = document.createElement('div');
+    taskDiv.classList.add('main__todo');
+    
+    const descriptionDiv = document.createElement('div');
+    descriptionDiv.classList.add('main__description');
+    descriptionDiv.style.height = 'auto';
+    descriptionDiv.style.padding = '10px';
+
+    const description = document.createElement('span');
+    description.innerText = task.text;
+    description.style.whiteSpace = 'pre-line';
+    description.style.wordBreak = "break-word";
+
+    descriptionDiv.appendChild(description);
+    taskDiv.appendChild(descriptionDiv);
+
+    const unArchiveButton = document.createElement('button');
+    unArchiveButton.classList.add('main__arch');
+    unArchiveButton.id = 'unArchiveButtonLarge';
+    unArchiveButton.textContent = 'Разархивировать';
+    
+    taskDiv.appendChild(unArchiveButton);
+
+    const unArchiveButtonHidden = document.createElement('button');
+    unArchiveButtonHidden.classList.add('main__arch--hidden');
+    unArchiveButtonHidden.display = 'none';
+    unArchiveButtonHidden.id = 'archiveButtonSmall';
+    unArchiveButtonHidden.innerHTML = '<img id="unarchive" src="./media/unarchive.svg"  >';
+
+    taskDiv.appendChild(unArchiveButtonHidden);
+
+    mainBlock?.appendChild(taskDiv);
+
+    Array.from([unArchiveButton, unArchiveButtonHidden]).forEach((item) => {
+        item.addEventListener('click', function() {
+            unArchiveTask(db, task);
+        });
+    });
+    
+}
+
+function deleteAllTasks(db) {
+    const transaction = db.transaction("tasks", "readwrite");
+    const store = transaction.objectStore("tasks");
+    const existanceIndex = store.index('existance');
+    const queryAll = existanceIndex.getAll(0);
+
+    queryAll.onsuccess = function () {
+        let tasks = queryAll.result;
+        tasks.forEach(task => {
+            store.delete(task.id);
+        });
+    }
+
+    window.location.reload();
+
+}
+
+function unArchiveTask(db, task) {
+    const transaction = db.transaction("tasks", "readwrite");
+    const store = transaction.objectStore("tasks");
+
+    store.put({id: task.id, checked: task.checked, text: task.text, exist: 1});
+
+    window.location.reload();
 }
 
 function archiveTask(db, task) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.delete(task.id);
+    store.put({id: task.id, checked: task.checked, text: task.text, exist: 0});
 
     window.location.reload();
 }
@@ -167,11 +259,6 @@ function checkTask(db, task, inputText) {
     const store = transaction.objectStore("tasks");
 
     const isChecked = task.checked ? false : true;
-    if (isChecked) {
-        inputText.style.textDecoration = "line-through";
-    } else {
-        inputText.style.textDecoration = "none";
-    }
     store.put({id: task.id, checked: isChecked, text: task.text, exist: task.exist});
 }
 

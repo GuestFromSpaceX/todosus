@@ -32,6 +32,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .header__container nav ul {
@@ -57,13 +59,13 @@ body {
 .main__container {
 
     margin: 50px auto;
-    padding: 50px 50px;
+    padding: 50px 10px;
 
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap: 10px;
+    gap: 30px;
 
     border: 0px solid black;
     max-width: 1440px;
@@ -77,12 +79,19 @@ body {
     border-radius: 10px;
     background-color: rgb(246, 247, 251);
     transition: .5s;
+    position: relative;
+}
+
+.main__search img {
+    position: absolute;
+    top: 10px;
+    left: 10px;
 }
 
 .main__search input {
     background-color: rgb(246, 247, 251);
     border: 0px solid black;
-    margin: 0 10px;
+    margin: 0 10px 0 40px;
     width: 90%;
     height: 40px;
     outline: none;
@@ -98,6 +107,39 @@ body {
 
     border: 0px solid black;
     width: 100%;
+}
+
+.main__arcive {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+
+    border: 0px solid black;
+    width: 100%; 
+}
+
+.main__delete {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0px;
+    padding: 10px;
+    box-shadow: -10px -10px 15px rgba(255,255,255,0.5),
+                10px 10px 15px rgba(70,70,70,0.12);
+    border-radius: 10px;
+    background-color: rgb(247, 224, 224);
+    transition: .5s;
+}
+
+.main__delete:active {
+    box-shadow: 
+                inset 10px 10px 15px rgba(70,70,70,0.12);
+    border-radius: 10px;
+    background-color: rgb(208, 186, 186);
+    transition: .5s;
 }
 
 .main__todo {
@@ -176,7 +218,15 @@ body {
     transition: .5s;
 }
 
+#archiveButtonSmall {
+    display: none;
+}
+
 #archive {
+    display: none;
+}
+
+#unarchive {
     display: none;
 }
 
@@ -250,5 +300,14 @@ footer div {
     #archive {
         display: inline;
         width: 15px;
+    }
+
+    #unarchive {
+        display: inline;
+        width: 15px;
+    }
+
+    #archiveButtonSmall {
+        display: block;
     }
 }
