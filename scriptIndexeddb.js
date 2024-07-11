@@ -29,25 +29,27 @@ request.onsuccess = function () {
     const mainBlock = document.getElementById('block');
     const mainSearch = document.getElementById('mainSearch');
     
-    displayTasks(db, 'existance', 1);
-    displayArchiveTasks(db);
-
-    mainSearch?.addEventListener('input', function () {
-        if (mainSearch.value != '') {
-            displayTasks(db, 'innerText', mainSearch.value);
-        } else {
-            displayTasks(db, 'existance', 1);
-        }
-    });
-
+    
     transaction.oncomplete = function () {
+        
+        displayTasks(db, 'existance', 1);
+        displayArchiveTasks(db);
+    
+
+        mainSearch?.addEventListener('input', function () {
+            if (mainSearch.value != '') {
+                displayTasks(db, 'existance', mainSearch.value);
+            } else {
+                displayTasks(db, 'existance', 1);
+            }
+        });
+
         document.getElementById('add')?.addEventListener('click', function () {
             addTask(db);
         });
 
         document.querySelector('.main__delete')?.addEventListener('click', function() {
             deleteAllTasks(db);
-            console.log(1)
         })
     };
 };
@@ -60,6 +62,7 @@ function displayTasks(db, index, get) {
     const queryAll = existanceIndex.getAll(1);
     
     queryAll.onsuccess = function () {
+        console.log(get)
         let tasks = null;
         if (typeof get == 'string') {
             const allTasks = queryAll.result;
@@ -129,6 +132,7 @@ function DOMElement(db, task, mainBlock) {
     inputText.placeholder = 'Вашa задачa';
     inputText.rows = 'auto';
     inputText.minrows = 3;
+    inputText.style.padding = '10px';
 
     inputTextLabel.appendChild(inputText);
     descriptionDiv.appendChild(inputTextLabel);
