@@ -104,6 +104,7 @@ function displayArchiveTasks(db) {
 function DOMElement(db, task, mainBlock) {
     const taskDiv = document.createElement('div');
     taskDiv.classList.add('main__todo');
+    taskDiv.draggable = true;
 
     const label = document.createElement('label');
     const inputCheckbox = document.createElement('input');
@@ -159,7 +160,7 @@ function DOMElement(db, task, mainBlock) {
         checkTask(db, task, inputText);
     });
 
-    inputText.addEventListener('change', function () {
+    inputText.addEventListener('input', function () {
         updateText(db, task, inputText);
     })
 
