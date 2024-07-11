@@ -14,6 +14,8 @@ request.onupgradeneeded = function () {
     store.createIndex('check', 'checked', { unique: false });
     store.createIndex('innerText', 'text', { unique: false });
     store.createIndex('existance', 'exist', { unique: false });
+    store.createIndex('creationDate', 'date', {unique: false });
+    store.createIndex('dueTo', 'due', {unique: false});
     
 }
 
@@ -62,7 +64,6 @@ function displayTasks(db, index, get) {
     const queryAll = existanceIndex.getAll(1);
     
     queryAll.onsuccess = function () {
-        console.log(get)
         let tasks = null;
         if (typeof get == 'string') {
             const allTasks = queryAll.result;
@@ -139,6 +140,34 @@ function DOMElement(db, task, mainBlock) {
     descriptionDiv.appendChild(inputTextLabel);
     taskDiv.appendChild(descriptionDiv);
 
+    const time = document.createElement('div');
+    time.classList.add('main__time');
+
+    descriptionDiv.appendChild(time);
+
+    const timeLeft = document.createElement('div');
+    timeLeft.classList.add('time__left');
+    timeLeft.innerText = 'Создана: ' + task.date;
+
+    const timeRight = document.createElement('div');
+    timeRight.classList.add('time__right');
+
+    const timeRightText = document.createElement('span');
+    timeRightText.classList.add('time__right-text');
+    timeRightText.innerText = 'Сделать до: ';
+
+    timeRight.appendChild(timeRightText);
+
+    const timeRightInput = document.createElement('input');
+    timeRightInput.classList.add('time__right-input');
+    timeRightInput.type = 'datetime-local'
+    timeRightInput.value = task.due
+
+    timeRight.appendChild(timeRightInput);
+
+    time.appendChild(timeLeft);
+    time.appendChild(timeRight);
+
     const archiveButton = document.createElement('button');
     archiveButton.classList.add('main__arch');
     archiveButton.id = 'archiveButtonLarge';
@@ -155,6 +184,11 @@ function DOMElement(db, task, mainBlock) {
     taskDiv.appendChild(archiveButtonHidden);
 
     mainBlock?.appendChild(taskDiv);
+
+    if (timeRightInput.value != "" && +(new Date()) > new Date(task.due)) {
+        timeRight.style.backgroundColor = '#F7E0E0';
+        timeRightInput.style.backgroundColor = '#F7E0E0';
+    };
     
     inputCheckbox.addEventListener('click', function () {
         checkTask(db, task, inputText);
@@ -169,6 +203,10 @@ function DOMElement(db, task, mainBlock) {
             archiveTask(db, task);
         });
     });
+
+    timeRightInput.addEventListener('input', function() {
+        updateDueTo(db, task, timeRightInput.value);
+    })
     
 }
 
@@ -235,7 +273,7 @@ function unArchiveTask(db, task) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.put({id: task.id, checked: task.checked, text: task.text, exist: 1});
+    store.put({id: task.id, checked: task.checked, text: task.text, exist: 1, date: task.date});
 
     window.location.reload();
 }
@@ -244,7 +282,7 @@ function archiveTask(db, task) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.put({id: task.id, checked: task.checked, text: task.text, exist: 0});
+    store.put({id: task.id, checked: task.checked, text: task.text, exist: 0, date: task.date});
 
     window.location.reload();
 }
@@ -252,7 +290,11 @@ function archiveTask(db, task) {
 function addTask(db) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
-    const newTask = { checked: false, text: '', exist: 1 };
+    const newTask = { checked: false, 
+                        text: '', 
+                        exist: 1, 
+                        date: new Intl.DateTimeFormat('ru-RU', {year: 'numeric', month: 'numeric', day: 'numeric',
+                            hour: 'numeric', minute: 'numeric',}).format(new Date()) };
 
     store.add(newTask);
     
@@ -264,13 +306,26 @@ function checkTask(db, task, inputText) {
     const store = transaction.objectStore("tasks");
 
     const isChecked = task.checked ? false : true;
-    store.put({id: task.id, checked: isChecked, text: task.text, exist: task.exist});
+    store.put({id: task.id, checked: isChecked, text: task.text, exist: task.exist, date: task.date});
 }
 
 function updateText(db, task, inputText) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
+    store.put({id: task.id, checked: task.checked, text: inputText.value, exist: task.exist, date: task.date});
+}
 
-    store.put({id: task.id, checked: task.checked, text: inputText.value, exist: task.exist});
+function updateDueTo(db, task, dueToDate) {
+    const transaction = db.transaction("tasks", "readwrite");
+    const store = transaction.objectStore("tasks");
+
+    store.put({id: task.id, 
+                checked: task.checked, 
+                text: task.text, 
+                exist: task.exist, 
+                date: task.date,
+                due: dueToDate});
+
+    window.location.reload();
 }
