@@ -68,7 +68,7 @@ function displayTasks(db, index, get) {
         let tasks = null;
         if (typeof get == 'string') {
             const allTasks = queryAll.result;
-            tasks = allTasks.filter(task => task.text.includes(get))
+            tasks = allTasks.filter(task => task.text.includes(get) || task.title.includes(get))
         } else {
             tasks = queryAll.result;
         }
