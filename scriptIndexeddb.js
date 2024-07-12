@@ -313,6 +313,7 @@ function deleteAllTasks(db) {
     }
 
     displayTasks(db, 'existance', 1);
+    displayArchiveTasks(db);
 
 }
 
@@ -405,6 +406,8 @@ function updateDueTo(db, task, dueToDate) {
                 due: dueToDate,
                 title: task.title,
                 opened: task.opened});
+
+    displayTasks(db, 'existance', 1);
 
 }
 
