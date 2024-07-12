@@ -153,6 +153,9 @@ body {
     cursor: pointer;
 }
 
+.main__input-text-lable {
+}
+
 .check-area {
     display: none;
 }
@@ -197,16 +200,47 @@ body {
     border: 0px solid black;
     margin: 0 10px;
     width: 90%;
-    /* height: 40px; */
     outline: none;
     resize: none;
+}
+
+.main__description-top {
+    display: flex;
+    flex-direction: row;
+}
+
+.main__title-lable {
+    width: 100%;
+}
+
+.main__show {
+    cursor: pointer;
+    display: none;
+    transition: .5s;
+}
+
+.main__arrow {
+    width: 20px;
+    margin: 10px;
+    transition: .5s;
+}
+
+.main__title {
+    width: 100%;
+    border: 0px;
+    padding: 10px;
+    font-size: 1.4em;
+    background-color: var(--whiter);
+    outline: none;
 }
 
 .main__time {
     display: flex;
     flex-direction: row;
-    margin: 10px;
+    padding: 10px;
     gap: 10px;
+
+    border-top: 1px solid rgb(216, 216, 216);
 }
 
 .time__left, 

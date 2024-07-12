@@ -16,7 +16,8 @@ request.onupgradeneeded = function () {
     store.createIndex('existance', 'exist', { unique: false });
     store.createIndex('creationDate', 'date', {unique: false });
     store.createIndex('dueTo', 'due', {unique: false});
-    
+    store.createIndex('taskTitle', 'title', {unique: false});
+    store.createIndex('open', 'opened', {unique: false});
 }
 
 request.onsuccess = function () {
@@ -125,13 +126,51 @@ function DOMElement(db, task, mainBlock) {
     const descriptionDiv = document.createElement('div');
     descriptionDiv.classList.add('main__description');
 
+    const descriptionTop = document.createElement('div');
+    descriptionTop.classList.add('main__description-top');
+    
+    descriptionDiv.appendChild(descriptionTop);
+
+    const titleLabel = document.createElement('label');
+    titleLabel.classList.add('main__title-lable');
+    const title = document.createElement('input');
+    title.classList.add('main__title');
+    title.placeholder = 'Заголовок задачи';
+    title.value = task.title;
+
+    titleLabel.appendChild(title);
+    descriptionTop.appendChild(titleLabel);
+
+    const showLabel = document.createElement('label');
+    const show = document.createElement('input');
+    show.classList.add('main__show');
+    show.type = 'checkbox'
+    const arrow = document.createElement('img');
+    arrow.classList.add('main__arrow');
+    if (task.opened) {
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        arrow.style.transform = 'rotate(0deg)';
+    }
+    arrow.src = './media/arrow.svg';
+
+    showLabel.appendChild(show);
+    showLabel.appendChild(arrow);
+    descriptionTop.appendChild(showLabel);
+
     const inputTextLabel = document.createElement('label');
+    inputTextLabel.classList.add('main__input-text-lable')
+    if (task.opened) {
+        inputTextLabel.hidden = false;
+    } else {
+        inputTextLabel.hidden = true;
+    }
     const inputText = document.createElement('textarea');
     inputText.classList.add('main__input');
     inputText.type = 'text';
-    inputText.maxLength = 90;
+    inputText.maxLength = 200;
     inputText.value = task.text;
-    inputText.placeholder = 'Вашa задачa';
+    inputText.placeholder = 'Описание Вашей задачи';
     inputText.rows = 'auto';
     inputText.minrows = 3;
     inputText.style.padding = '10px';
@@ -198,6 +237,10 @@ function DOMElement(db, task, mainBlock) {
         updateText(db, task, inputText);
     })
 
+    title.addEventListener('input', function () {
+        updateTitle(db, task, title);
+    })
+
     Array.from([archiveButton, archiveButtonHidden]).forEach((item) => {
         item.addEventListener('click', function() {
             archiveTask(db, task);
@@ -206,6 +249,10 @@ function DOMElement(db, task, mainBlock) {
 
     timeRightInput.addEventListener('input', function() {
         updateDueTo(db, task, timeRightInput.value);
+    })
+
+    show.addEventListener('click', function() {
+        updateShow(db, task, inputTextLabel, arrow);
     })
     
 }
@@ -273,7 +320,14 @@ function unArchiveTask(db, task) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.put({id: task.id, checked: task.checked, text: task.text, exist: 1, date: task.date});
+    store.put({id: task.id, 
+               checked: task.checked, 
+               text: task.text, 
+               exist: 1, 
+               date: task.date, 
+               due: task.due,
+               title: task.title,
+                opened: task.opened});
 
     window.location.reload();
 }
@@ -282,7 +336,14 @@ function archiveTask(db, task) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.put({id: task.id, checked: task.checked, text: task.text, exist: 0, date: task.date});
+    store.put({id: task.id, 
+               checked: task.checked, 
+               text: task.text, 
+               exist: 0, 
+               date: task.date, 
+               due: task.due,
+               title: task.title,
+               opened: task.opened});
 
     window.location.reload();
 }
@@ -294,7 +355,9 @@ function addTask(db) {
                         text: '', 
                         exist: 1, 
                         date: new Intl.DateTimeFormat('ru-RU', {year: 'numeric', month: 'numeric', day: 'numeric',
-                            hour: 'numeric', minute: 'numeric',}).format(new Date()) };
+                            hour: 'numeric', minute: 'numeric',}).format(new Date()),
+                        title: '',
+                        opened: false, };
 
     store.add(newTask);
     
@@ -306,14 +369,28 @@ function checkTask(db, task, inputText) {
     const store = transaction.objectStore("tasks");
 
     const isChecked = task.checked ? false : true;
-    store.put({id: task.id, checked: isChecked, text: task.text, exist: task.exist, date: task.date});
+    store.put({id: task.id, 
+               checked: isChecked, 
+               text: task.text, 
+               exist: task.exist, 
+               date: task.date,
+               due: task.due,
+               title: task.title,
+               opened: task.opened});
 }
 
 function updateText(db, task, inputText) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    store.put({id: task.id, checked: task.checked, text: inputText.value, exist: task.exist, date: task.date});
+    store.put({id: task.id, 
+               checked: task.checked, 
+               text: inputText.value, 
+               exist: task.exist, 
+               date: task.date,
+               due: task.due,
+               title: task.title,
+               opened: task.opened});
 }
 
 function updateDueTo(db, task, dueToDate) {
@@ -325,7 +402,60 @@ function updateDueTo(db, task, dueToDate) {
                 text: task.text, 
                 exist: task.exist, 
                 date: task.date,
-                due: dueToDate});
+                due: dueToDate,
+                title: task.title,
+                opened: task.opened});
 
     window.location.reload();
+}
+
+function updateTitle(db, task, inputTitle) {
+    const transaction = db.transaction("tasks", "readwrite");
+    const store = transaction.objectStore("tasks");
+
+    store.put({id: task.id, 
+               checked: task.checked, 
+               text: task.text, 
+               exist: task.exist, 
+               date: task.date,
+               due: task.due,
+               title: inputTitle.value,
+               opened: task.opened});
+}
+
+function updateShow(db, task, inputTextLabel, arrow) {
+    const transaction = db.transaction("tasks", "readwrite");
+    const store = transaction.objectStore("tasks");
+    
+
+    console.log('1', task.opened);
+    if (task.opened == false) {
+        console.log('2', task.opened);
+        arrow.style.transform = 'rotate(0deg)';
+        store.put({id: task.id, 
+            checked: task.checked, 
+            text: task.text, 
+            exist: task.exist, 
+            date: task.date,
+            due: task.due,
+            title: task.title,
+            opened: true});
+        inputTextLabel.hidden = false;
+    } else {
+        console.log('3', task.opened);
+        arrow.style.transform = 'rotate(180deg)';
+        store.put({id: task.id, 
+            checked: task.checked, 
+            text: task.text, 
+            exist: task.exist, 
+            date: task.date,
+            due: task.due,
+            title: task.title,
+            opened: false});
+        inputTextLabel.hidden = true;
+    }
+
+    window.location.reload();
+   
+
 }
