@@ -252,7 +252,7 @@ function DOMElement(db, task, mainBlock) {
     })
 
     show.addEventListener('click', function() {
-        updateShow(db, task, inputTextLabel, arrow);
+        updateShow(db, task, inputTextLabel, arrow, title, inputText);
     })
     
 }
@@ -312,7 +312,7 @@ function deleteAllTasks(db) {
         });
     }
 
-    window.location.reload();
+    displayTasks(db, 'existance', 1);
 
 }
 
@@ -329,7 +329,7 @@ function unArchiveTask(db, task) {
                title: task.title,
                 opened: task.opened});
 
-    window.location.reload();
+    displayArchiveTasks(db);
 }
 
 function archiveTask(db, task) {
@@ -345,7 +345,7 @@ function archiveTask(db, task) {
                title: task.title,
                opened: task.opened});
 
-    window.location.reload();
+    displayTasks(db, 'existance', 1);
 }
 
 function addTask(db) {
@@ -361,7 +361,7 @@ function addTask(db) {
 
     store.add(newTask);
     
-    window.location.reload();
+    displayTasks(db, 'existance', 1);
 }
 
 function checkTask(db, task, inputText) {
@@ -406,7 +406,6 @@ function updateDueTo(db, task, dueToDate) {
                 title: task.title,
                 opened: task.opened});
 
-    window.location.reload();
 }
 
 function updateTitle(db, task, inputTitle) {
@@ -423,7 +422,7 @@ function updateTitle(db, task, inputTitle) {
                opened: task.opened});
 }
 
-function updateShow(db, task, inputTextLabel, arrow) {
+function updateShow(db, task, inputTextLabel, arrow, title, inputText) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
     
@@ -434,11 +433,11 @@ function updateShow(db, task, inputTextLabel, arrow) {
         arrow.style.transform = 'rotate(0deg)';
         store.put({id: task.id, 
             checked: task.checked, 
-            text: task.text, 
+            text: inputText.value, 
             exist: task.exist, 
             date: task.date,
             due: task.due,
-            title: task.title,
+            title: title.value,
             opened: true});
         inputTextLabel.hidden = false;
     } else {
@@ -446,16 +445,17 @@ function updateShow(db, task, inputTextLabel, arrow) {
         arrow.style.transform = 'rotate(180deg)';
         store.put({id: task.id, 
             checked: task.checked, 
-            text: task.text, 
+            text: inputText.value, 
             exist: task.exist, 
             date: task.date,
             due: task.due,
-            title: task.title,
+            title: title.value,
             opened: false});
         inputTextLabel.hidden = true;
     }
 
-    window.location.reload();
+    // window.location.reload();
+    displayTasks(db, 'existance', 1);
    
 
 }
