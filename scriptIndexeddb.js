@@ -407,7 +407,7 @@ function updateDueTo(db, task, dueToDate) {
                 title: task.title,
                 opened: task.opened});
 
-    displayTasks(db, 'existance', 1);
+    // displayTasks(db, 'existance', 1);
 
 }
 
