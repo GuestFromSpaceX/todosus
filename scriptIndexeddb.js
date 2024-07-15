@@ -248,7 +248,7 @@ function DOMElement(db, task, mainBlock) {
     });
 
     timeRightInput.addEventListener('input', function() {
-        updateDueTo(db, task, timeRightInput.value);
+        updateDueTo(db, task, timeRightInput.value, inputText, title);
     })
 
     show.addEventListener('click', function() {
@@ -396,19 +396,17 @@ function updateText(db, task, inputText) {
                opened: task.opened});
 }
 
-function updateDueTo(db, task, dueToDate) {
+function updateDueTo(db, task, dueToDate, inputText, title) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
-    
-
     store.put({id: task.id, 
                 checked: task.checked, 
-                text: task.text, 
+                text: inputText.value, 
                 exist: task.exist, 
                 date: task.date,
                 due: dueToDate,
-                title: task.title,
+                title: title.value,
                 opened: task.opened});
 
     displayTasks(db, 'existance', 1);
