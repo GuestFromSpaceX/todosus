@@ -378,6 +378,8 @@ function checkTask(db, task, inputText) {
                due: task.due,
                title: task.title,
                opened: task.opened});
+
+    displayTasks(db, 'existance', 1);
 }
 
 function updateText(db, task, inputText) {
@@ -398,6 +400,8 @@ function updateDueTo(db, task, dueToDate) {
     const transaction = db.transaction("tasks", "readwrite");
     const store = transaction.objectStore("tasks");
 
+    
+
     store.put({id: task.id, 
                 checked: task.checked, 
                 text: task.text, 
@@ -407,7 +411,7 @@ function updateDueTo(db, task, dueToDate) {
                 title: task.title,
                 opened: task.opened});
 
-    // displayTasks(db, 'existance', 1);
+    displayTasks(db, 'existance', 1);
 
 }
 
